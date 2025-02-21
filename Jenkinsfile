@@ -13,26 +13,29 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''#!/bin/bash
-                echo 'Test Step: We run testing tool like pytest here'
-
-                # TODO fill out the path to conda here
-                # sudo /PATH/TO/CONDA init
-                sudo /usr/local/miniconda3/bin/conda init bash
-                source ~/.bashrc
-
-                # TODO Complete the command to run pytest
-                # sudo /PATH/TO/CONDA run -n <Envinronment Name> <Command you want to run>
-                sudo /usr/local/miniconda3/bin/conda run -n mlip pytest
-
-                echo 'pytest not runned'
-                exit 1 #comment this line after implementing Jenkinsfile
+                echo 'Test Step: Running pytest'
+                
+                # Use the conda installation in Jenkins home directory
+                CONDA_PATH="/var/lib/jenkins/miniconda3/bin/conda"
+                
+                if [ ! -f "$CONDA_PATH" ]; then
+                    echo "Error: Conda not found at $CONDA_PATH"
+                    exit 1
+                fi
+                
+                echo "Found conda at: $CONDA_PATH"
+                
+                # Initialize conda in the current shell
+                eval "$($CONDA_PATH shell.bash hook)"
+                
+                # Run pytest in the mlip environment
+                $CONDA_PATH run -n mlip pytest
                 '''
-
             }
         }
         stage('Deploy') {
             steps {
-                echo 'In this step, we deploy our porject'
+                echo 'In this step, we deploy our project'
                 echo 'Depending on the context, we may publish the project artifact or upload pickle files'
             }
         }
